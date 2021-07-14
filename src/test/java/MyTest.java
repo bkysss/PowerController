@@ -6,6 +6,11 @@ import org.junit.Test;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 public class MyTest {
@@ -33,5 +38,16 @@ public class MyTest {
             System.out.println(powerCTL.getIP());
             System.out.println(powerCTL);
         }
+    }
+
+    @Test
+    public void test2() throws IOException {
+        Socket socket=new Socket("192.168.31.250",2000);
+        String s="SCMD DIGW 512 1 0";
+        BufferedWriter writer=new BufferedWriter(new OutputStreamWriter(socket.getOutputStream(), StandardCharsets.UTF_8));
+        writer.write(s);
+        writer.flush();
+        socket.close();
+        System.out.println("succeed");
     }
 }
