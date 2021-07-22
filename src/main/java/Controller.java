@@ -1,12 +1,18 @@
 import com.nan.mapper.DailyMapper;
 import com.nan.mapper.ExceptionMapper;
 import com.nan.mapper.PowerCTLMapper;
+import com.nan.mapper.ServSockMapper;
 import com.nan.pojo.Exception;
 import com.nan.pojo.PowerCTL;
 import lombok.SneakyThrows;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -54,7 +60,7 @@ class DailyTask extends TimerTask{
         SimpleDateFormat dateFormat= new SimpleDateFormat("yyyyMMdd");
         String date=dateFormat.format(calendar.getTime());
         List<Exception> exceptionList=exceptionMapper.getException(date);
-        if(exceptionList.size()!=0){
+        if(exceptionList.size()!=0){ //优先检查Exception表，若有记录则执行，若没有，则根据PowerControl表记录执行
             HandleException(exceptionList);
         }
         else {
@@ -83,14 +89,35 @@ class DailyTask extends TimerTask{
         }
     }
 
-    //服务器开机(待实现)
-    static public void PowerOn(String ip){
-        System.out.println("Turn on"+ip);
+    //服务器开机
+    static public void PowerOn(String ip) throws IOException {
+        Socket socket = new Socket("192.168.31.250",2000);
+        ApplicationContext context=new ClassPathXmlApplicationContext("applicationContext.xml");
+        ServSockMapper servSockMapper=context.getBean("servSockMapper",ServSockMapper.class);
+        int turnOnSock=servSockMapper.getSock(ip);
+        String str="SCMD DIGW ";
+        int base=511+turnOnSock;
+        str+=base+" 1 1";
+        BufferedWriter writer=new BufferedWriter(new OutputStreamWriter(socket.getOutputStream(), StandardCharsets.UTF_8));
+        writer.write(str);
+        writer.flush();
+        socket.close();
     }
 
     //服务器关机
+    @SneakyThrows
     static public void PowerOff(String ip){
-        System.out.println("Turn off"+ip);
+        Socket socket = new Socket("192.168.31.250",2000);
+        ApplicationContext context=new ClassPathXmlApplicationContext("applicationContext.xml");
+        ServSockMapper servSockMapper=context.getBean("servSockMapper",ServSockMapper.class);
+        int turnOnSock=servSockMapper.getSock(ip);
+        String str="SCMD DIGW ";
+        int base=511+turnOnSock;
+        str+=base+" 1 0";
+        BufferedWriter writer=new BufferedWriter(new OutputStreamWriter(socket.getOutputStream(), StandardCharsets.UTF_8));
+        writer.write(str);
+        writer.flush();
+        socket.close();
     }
 
     //服务器定时开机功能
@@ -99,6 +126,7 @@ class DailyTask extends TimerTask{
         SimpleDateFormat ft=new SimpleDateFormat("yyyyMMdd:hhmmss");
         Date date=ft.parse(dateStr);
         timer.schedule(new TimerTask() {
+            @SneakyThrows
             @Override
             public void run() {
                 PowerOn(ip);
@@ -110,17 +138,15 @@ class DailyTask extends TimerTask{
     //服务器定时关机功能
     static public void TurnOff(String ip,String dateStr) throws ParseException, InterruptedException {
         Timer timer = new Timer();
-        SimpleDateFormat ft=new SimpleDateFormat("yyyyMMdd:hhmmss");
+        SimpleDateFormat ft=new SimpleDateFormat("yyyyMMdd");
         Date date=ft.parse(dateStr);
-
-        //String CPUInfo=dailyMapper.getCPUInfo(dateStr,ip);
         timer.schedule(new TimerTask() {
             @SneakyThrows
             @Override
             public void run() {
                 while(AnalysisCPU(ip,dateStr)){
                     Thread.sleep(5*60*1000);
-                }
+                }//关机时检查服务器进程CPU使用状态，若有进程占用CPU较多，则进程等待5分钟后再重新检查
                 PowerOff(ip);
                 timer.cancel();
             }

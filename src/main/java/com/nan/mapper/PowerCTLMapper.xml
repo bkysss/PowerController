@@ -8,4 +8,13 @@
     <select id="getServInfo" resultType="com.nan.pojo.PowerCTL">
         select * from SmartController.PowerControl
     </select>
+    <select id="HasInfo" resultType="int">
+        select count(*) from SmartController.PowerControl where IPAddr=#{ip}
+    </select>
+    <insert id="insertInfo" parameterType="com.nan.pojo.PowerCTL">
+        insert into SmartController.PowerControl (IPAddr,POnTime,POffTime) values (#{IP},#{POnTime},#{POffTime});
+    </insert>
+    <update id="updateInfo" parameterType="com.nan.pojo.PowerCTL">
+        update SmartController.PowerControl set POnTime=#{POnTime},POffTime=#{POffTime} where IPAddr=#{IP}
+    </update>
 </mapper>

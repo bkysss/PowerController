@@ -14,4 +14,10 @@
     <select id="getTOffLast" resultType="string">
         select TOffLast from SmartController.Daily where DIPAddr=#{ip}
     </select>
+    <select id="getTimeInfo" resultType="com.nan.pojo.TimeInfo">
+        select DDate,TOnFirst,TOffLast from SmartController.Daily where DIPAddr=#{ip}
+    </select>
+    <select id="getServDaily" resultType="com.nan.pojo.Daily">
+        select * from SmartController.Daily where DIPAddr=#{ip}
+    </select>
 </mapper>

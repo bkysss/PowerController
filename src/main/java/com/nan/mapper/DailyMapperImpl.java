@@ -1,6 +1,8 @@
 package com.nan.mapper;
 
 import com.nan.pojo.Daily;
+import com.nan.pojo.Record;
+import com.nan.pojo.TimeInfo;
 import org.mybatis.spring.support.SqlSessionDaoSupport;
 
 import java.util.List;
@@ -20,5 +22,15 @@ public class DailyMapperImpl extends SqlSessionDaoSupport implements DailyMapper
     @Override
     public List<String> getTOffLast(String ip) {
         return getSqlSession().getMapper(DailyMapper.class).getTOffLast(ip);
+    }
+
+    @Override
+    public List<TimeInfo> getTimeInfo(String ip) {
+        return getSqlSession().getMapper(DailyMapper.class).getTimeInfo(ip);
+    }
+
+    @Override
+    public List<Daily> getServDaily(String ip) {
+        return getSqlSession().getMapper(DailyMapper.class).getServDaily(ip);
     }
 }

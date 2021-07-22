@@ -26,6 +26,9 @@
     <bean id="exceptionMapper" class="com.nan.mapper.ExceptionMapperImpl">
         <property name="sqlSessionFactory" ref="sqlSessionFactory"/>
     </bean>
+    <bean id="servSockMapper" class="com.nan.mapper.ServSockMapperImpl">
+        <property name="sqlSessionFactory" ref="sqlSessionFactory"/>
+    </bean>
 
 
 </beans>
