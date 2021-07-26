@@ -25,8 +25,18 @@ public class DailyMapperImpl extends SqlSessionDaoSupport implements DailyMapper
     }
 
     @Override
+    public String getServMinTOff(String ip) {
+        return getSqlSession().getMapper(DailyMapper.class).getServMinTOff(ip);
+    }
+
+    @Override
     public List<TimeInfo> getTimeInfo(String ip) {
         return getSqlSession().getMapper(DailyMapper.class).getTimeInfo(ip);
+    }
+
+    @Override
+    public String getServMinTOn(String ip) {
+        return getSqlSession().getMapper(DailyMapper.class).getServMinTOn(ip);
     }
 
     @Override

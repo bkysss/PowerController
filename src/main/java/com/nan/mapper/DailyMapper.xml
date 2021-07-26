@@ -20,4 +20,10 @@
     <select id="getServDaily" resultType="com.nan.pojo.Daily">
         select * from SmartController.Daily where DIPAddr=#{ip}
     </select>
+    <select id="getServMinTOn" resultType="string">
+        select TOnFirst from SmartController.Daily where DIPAddr=#{ip} order by TOnFirst limit 0,1
+    </select>
+    <select id="getServMinTOff" resultType="string">
+        select TOffLast from SmartController.Daily where DIPAddr=#{ip} order by TOffLast limit 0,1
+    </select>
 </mapper>

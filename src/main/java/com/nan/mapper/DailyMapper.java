@@ -14,4 +14,6 @@ public interface DailyMapper {
     public List<String> getTOffLast(@Param("ip") String ip);
     public List<TimeInfo> getTimeInfo(@Param("ip") String ip);
     public List<Daily> getServDaily(@Param("ip") String ip);
+    public String getServMinTOn(@Param("ip") String ip);
+    public String getServMinTOff(@Param("ip") String ip);
 }

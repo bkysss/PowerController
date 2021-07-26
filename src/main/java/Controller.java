@@ -107,17 +107,19 @@ class DailyTask extends TimerTask{
     //服务器关机
     @SneakyThrows
     static public void PowerOff(String ip){
-        Socket socket = new Socket("192.168.31.250",2000);
-        ApplicationContext context=new ClassPathXmlApplicationContext("applicationContext.xml");
-        ServSockMapper servSockMapper=context.getBean("servSockMapper",ServSockMapper.class);
-        int turnOnSock=servSockMapper.getSock(ip);
-        String str="SCMD DIGW ";
-        int base=511+turnOnSock;
-        str+=base+" 1 0";
-        BufferedWriter writer=new BufferedWriter(new OutputStreamWriter(socket.getOutputStream(), StandardCharsets.UTF_8));
-        writer.write(str);
-        writer.flush();
-        socket.close();
+//        Socket socket = new Socket("192.168.31.250",2000);
+//        ApplicationContext context=new ClassPathXmlApplicationContext("applicationContext.xml");
+//        ServSockMapper servSockMapper=context.getBean("servSockMapper",ServSockMapper.class);
+//        int turnOnSock=servSockMapper.getSock(ip);
+//        String str="SCMD DIGW ";
+//        int base=511+turnOnSock;
+//        str+=base+" 1 0";
+//        BufferedWriter writer=new BufferedWriter(new OutputStreamWriter(socket.getOutputStream(), StandardCharsets.UTF_8));
+//        writer.write(str);
+//        writer.flush();
+//        socket.close();
+
+        System.out.println(ip+" 可关机");
     }
 
     //服务器定时开机功能
@@ -144,7 +146,7 @@ class DailyTask extends TimerTask{
             @SneakyThrows
             @Override
             public void run() {
-                while(AnalysisCPU(ip,dateStr)){
+                while(!AnalysisCPU(ip,dateStr)){
                     Thread.sleep(5*60*1000);
                 }//关机时检查服务器进程CPU使用状态，若有进程占用CPU较多，则进程等待5分钟后再重新检查
                 PowerOff(ip);
@@ -160,8 +162,10 @@ class DailyTask extends TimerTask{
         DailyMapper dailyMapper=context.getBean("dailyMapper",DailyMapper.class);
         String CPUInfo=dailyMapper.getCPUInfo(date,ip); //当前CPU使用最高top5进程和使用情况，以“；”隔开
         String[] cpuArray=CPUInfo.split(";");  //分别获取各进程CPU使用情况，格式为“进程名|进程最大CPU使用率|进程平均CPU使用率”
-        String[] cpuTop=cpuArray[0].split("|"); //获取top1进程CPU使用信息
+        String[] cpuTop=cpuArray[0].split("\\|"); //获取top1进程CPU使用信息
+
         Double cpuUsage=Double.parseDouble(cpuTop[1]); //获取该进程CPU使用最大值
+
         if(cpuUsage>10){
             return false;
         }

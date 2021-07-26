@@ -18,9 +18,12 @@ public class CalTime {
     static public void updatePowerCTL(String ip){  //更新PowerControl表
         ApplicationContext context=new ClassPathXmlApplicationContext("applicationContext.xml");
         PowerCTLMapper powerCTLMapper=context.getBean("powerCTLMapper",PowerCTLMapper.class);
+        DailyMapper dailyMapper=context.getBean("dailyMapper",DailyMapper.class);
         int res= powerCTLMapper.HasInfo(ip);
-        String tOntime=""+calTOnTime(getServTime(ip)).intValue();
-        String tOfftime=""+calTOffTime(getServTime(ip)).intValue();
+        String baseOn=dailyMapper.getServMinTOn(ip);
+        String baseOff=dailyMapper.getServMinTOff(ip);
+        String tOntime=TimeBaseAddDiff(Double.parseDouble(baseOn),getServTime(ip).getCoordinates().get("tOn"));
+        String tOfftime=TimeBaseAddDiff(Double.parseDouble(baseOff),getServTime(ip).getCoordinates().get("tOff"));
         if(res==0){ //无服务器开关机时间信息，则插入，否则更新
             powerCTLMapper.insertInfo(new PowerCTL(ip,tOntime,tOfftime));
         }
@@ -32,12 +35,15 @@ public class CalTime {
     static public Centroid getServTime(String ip){  //调用算法，计算服务器开关机时间
         ApplicationContext context=new ClassPathXmlApplicationContext("applicationContext.xml");
         DailyMapper dailyMapper=context.getBean("dailyMapper",DailyMapper.class);
+        String baseOn=dailyMapper.getServMinTOn(ip);
+        String baseOff=dailyMapper.getServMinTOff(ip);
+
         List<Daily> dailyList=dailyMapper.getServDaily(ip);
         List<Record> records=new ArrayList<>();
         for(Daily daily:dailyList){
             Map<String,Double> timeMap=new HashMap<>();
-            timeMap.put("tOn",Double.parseDouble(daily.gettOnFirst()));
-            timeMap.put("tOff",Double.parseDouble(daily.gettOffLast()));
+            timeMap.put("tOn",(double)(CalTimeDiff(baseOn,daily.gettOnFirst())));
+            timeMap.put("tOff",(double)(CalTimeDiff(baseOff,daily.gettOffLast())));
             Record record=new Record(daily.getDdate(),timeMap);
             records.add(record);
         }
@@ -64,14 +70,31 @@ public class CalTime {
         }
         return centroid;
     }
+
     //返回开关机时间
-    static public Double calTOnTime(Centroid centroid){
-        return centroid.getCoordinates().get("tOn");
+//    static public Double calTOnTime(double base,Centroid centroid){
+//        return Double.parseDouble(TimeBaseAddDiff(base,centroid.getCoordinates().get("tOn")));
+//    }
+//
+//    static public Double calTOffTime(double base,Centroid centroid){
+//        return Double.parseDouble(TimeBaseAddDiff(base,centroid.getCoordinates().get("tOff")));
+//    }
+
+    //计算两个时间之间的分钟差值
+    public static int CalTimeDiff(String base,String time){
+        double baseTime=Double.parseDouble(base);
+        double tempTime=Double.parseDouble(time);
+        return (int)(tempTime/10000-baseTime/10000>0?(tempTime/10000-baseTime/10000)*60+(tempTime%10000/100-baseTime%10000/100):(tempTime%10000/100-baseTime%10000/100));
     }
 
-    static public Double calTOffTime(Centroid centroid){
-        return centroid.getCoordinates().get("tOff");
+    //返回在基础时间上加上差值的结果
+    public static String TimeBaseAddDiff(double base,double diff){
+
+        int res=(int)(base+((int)diff/60)*10000+((int)diff%60)*100);
+
+        return res/10000<10?"0"+res:""+res;
     }
+
 }
 
 
@@ -128,6 +151,8 @@ class Centroid {
                 "coordinates=" + coordinates +
                 '}';
     }
+
+
 // constructors, getter, toString, equals and hashcode
 }
 
@@ -248,6 +273,8 @@ class KMeans {
         return lastState;
 
     }
+
+
 }
 
 
