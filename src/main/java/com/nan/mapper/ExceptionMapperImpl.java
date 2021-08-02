@@ -10,4 +10,9 @@ public class ExceptionMapperImpl extends SqlSessionDaoSupport implements Excepti
     public List<Exception> getException(String date) {
         return getSqlSession().getMapper(ExceptionMapper.class).getException(date);
     }
+
+    @Override
+    public String getIp(String date) {
+        return getSqlSession().getMapper(ExceptionMapper.class).getIp(date);
+    }
 }

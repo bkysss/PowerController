@@ -6,6 +6,9 @@
 <mapper namespace="com.nan.mapper.ExceptionMapper">
 
     <select id="getException" resultType="com.nan.pojo.Exception">
-        select * from SmartController.Exception where Date=#{date}
+        select IpAddr,Date,TOnTime,TOffTime from SmartController.Exception where Date=#{date}
+    </select>
+    <select id="getIp" resultType="string">
+        select IpAddr from SmartController.Exception where Date=#{date}
     </select>
 </mapper>

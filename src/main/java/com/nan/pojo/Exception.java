@@ -1,16 +1,16 @@
 package com.nan.pojo;
 public class Exception {
-    private String ip;
+    private String ipaddr;
     private String date;
     private String tOnTime;
     private String tOffTime;
 
     public String getIp() {
-        return ip;
+        return ipaddr;
     }
 
     public void setIp(String ip) {
-        this.ip = ip;
+        this.ipaddr = ip;
     }
 
     public String getDate() {
@@ -35,5 +35,15 @@ public class Exception {
 
     public void settOffTime(String tOffTime) {
         this.tOffTime = tOffTime;
+    }
+
+    @Override
+    public String toString() {
+        return "Exception{" +
+                "ip='" + ipaddr + '\'' +
+                ", date='" + date + '\'' +
+                ", tOnTime='" + tOnTime + '\'' +
+                ", tOffTime='" + tOffTime + '\'' +
+                '}';
     }
 }

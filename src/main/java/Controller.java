@@ -70,38 +70,53 @@ class DailyTask extends TimerTask{
         }
     }
 
-    public void HandleException(List<Exception> exceptionList) throws ParseException, InterruptedException {
+    public static void HandleException(List<Exception> exceptionList) throws ParseException, InterruptedException {
+        Calendar calendar= Calendar.getInstance();
+        SimpleDateFormat dateFormat= new SimpleDateFormat("yyyy-MM-dd");
+        String date=dateFormat.format(calendar.getTime());
         for(Exception e:exceptionList){
             if(!e.gettOnTime().equals("")){
-                TurnOn(e.getIp(),e.gettOnTime());
+                TurnOn(e.getIp(),date+" "+InvertTime(e.gettOnTime()));
             }
             if(!e.gettOffTime().equals("")){
-                TurnOff(e.getIp(),e.gettOffTime());
+                TurnOff(e.getIp(),date+" "+InvertTime(e.gettOffTime()));
             }
         }
     }
 
     @SneakyThrows
-    public void HandlePowerCTL(List<PowerCTL> powerCTLList){
+    public static void HandlePowerCTL(List<PowerCTL> powerCTLList){
+        Calendar calendar= Calendar.getInstance();
+        SimpleDateFormat dateFormat= new SimpleDateFormat("yyyy-MM-dd");
+        String date=dateFormat.format(calendar.getTime());
         for(PowerCTL p:powerCTLList){
-            TurnOn(p.getIP(),p.getPOnTime());
-            TurnOff(p.getIP(),p.getPOffTime());
+            TurnOn(p.getIP(),date+" "+InvertTime(p.getPOnTime()));
+            TurnOff(p.getIP(),date+" "+InvertTime(p.getPOffTime()));
         }
+    }
+
+    public static String InvertTime(String str){
+        String hour=str.substring(0,2);
+        String minute=str.substring(2,4);
+        String second=str.substring(4,6);
+        return hour+":"+minute+":"+second;
     }
 
     //服务器开机
     static public void PowerOn(String ip) throws IOException {
-        Socket socket = new Socket("192.168.31.250",2000);
-        ApplicationContext context=new ClassPathXmlApplicationContext("applicationContext.xml");
-        ServSockMapper servSockMapper=context.getBean("servSockMapper",ServSockMapper.class);
-        int turnOnSock=servSockMapper.getSock(ip);
-        String str="SCMD DIGW ";
-        int base=511+turnOnSock;
-        str+=base+" 1 1";
-        BufferedWriter writer=new BufferedWriter(new OutputStreamWriter(socket.getOutputStream(), StandardCharsets.UTF_8));
-        writer.write(str);
-        writer.flush();
-        socket.close();
+//        Socket socket = new Socket("192.168.31.250",2000);
+//        ApplicationContext context=new ClassPathXmlApplicationContext("applicationContext.xml");
+//        ServSockMapper servSockMapper=context.getBean("servSockMapper",ServSockMapper.class);
+//        int turnOnSock=servSockMapper.getSock(ip);
+//        String str="SCMD DIGW ";
+//        int base=511+turnOnSock;
+//        str+=base+" 1 1";
+//        BufferedWriter writer=new BufferedWriter(new OutputStreamWriter(socket.getOutputStream(), StandardCharsets.UTF_8));
+//        writer.write(str);
+//        writer.flush();
+//        socket.close();
+
+        System.out.println(ip+" 开机");
     }
 
     //服务器关机
@@ -125,13 +140,19 @@ class DailyTask extends TimerTask{
     //服务器定时开机功能
     static public void TurnOn(String ip,String dateStr) throws ParseException, InterruptedException {
         Timer timer = new Timer();
-        SimpleDateFormat ft=new SimpleDateFormat("yyyyMMdd:hhmmss");
+        SimpleDateFormat ft=new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
         Date date=ft.parse(dateStr);
         timer.schedule(new TimerTask() {
             @SneakyThrows
             @Override
             public void run() {
                 PowerOn(ip);
+
+                Calendar calendar = Calendar.getInstance();
+                SimpleDateFormat timeFormat = new SimpleDateFormat("hhmmss");
+                String time = timeFormat.format(calendar.getTime());
+                System.out.println(time);
+
                 timer.cancel();
             }
         }, date);
@@ -150,6 +171,7 @@ class DailyTask extends TimerTask{
                     Thread.sleep(5*60*1000);
                 }//关机时检查服务器进程CPU使用状态，若有进程占用CPU较多，则进程等待5分钟后再重新检查
                 PowerOff(ip);
+
                 timer.cancel();
             }
         }, date);
